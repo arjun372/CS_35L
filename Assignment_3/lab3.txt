@@ -1,0 +1,26 @@
+1. Fetch CoreUtils 7.6, descent into dir & build using Makefile. No errors or 
+   warnings were reported during the build.
+
+2. To reproduce the bug, ensure LC_ALL="en_US.UTF_8" and run ls from src dir
+
+3. "./ls -l"  returns ::
+   ...
+   ...
+   -rwxr-xr-x 1 arju eeugrad  73687 2015-10-17 15:11 whoami
+   -rw-r--r-- 1 arju eeugrad   2538 2009-09-01 04:01 whoami.c
+   -rw-r--r-- 1 arju eeugrad  13048 2015-10-17 15:11 whoami.o
+   ...
+   ... 
+
+  "ls -l" returns :: 
+   ...
+   ...
+   -rwxr-xr-x 1 arju eeugrad 73687 Oct 17 15:11 whoami
+   -rw-r--r-- 1 arju eeugrad  2538 Sep  1  2009 whoami.c
+   -rw-r--r-- 1 arju eeugrad 13048 Oct 17 15:11 whoami.o
+   ...
+   ...
+
+This indicates that the two versions of ls produce differing results for the 
+same command and arguments.
+

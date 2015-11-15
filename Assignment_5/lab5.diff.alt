@@ -1,0 +1,18 @@
+--- lib/timespec.h	2005-09-21 23:05:39.000000000 -0700
++++ lib/timespec.h	2015-10-29 21:49:05.784580000 -0700
+@@ -39,13 +39,13 @@
+   long tv_nsec;
+ };
+ # endif
+-
++#define longdiff(a, b) ((a) < (b) ? -1 : (a) > (b))
+ /* Return negative, zero, positive if A < B, A == B, A > B, respectively.
+    Assume the nanosecond components are in range, or close to it.  */
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
++  int diff = longdiff(a.tv_sec, b.tv_sec);
+   return diff ? diff : a.tv_nsec - b.tv_nsec;
+ }
+ 

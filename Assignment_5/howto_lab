@@ -1,0 +1,14 @@
+1. ./configure CFLAGS="-g"
+2. make --> wont compile. 
+3. use renaming patch ::
+   1. wget on that link
+   2. Use that patch to patch that software
+   3. patch p0 < 
+   4. make -- should succeed in compiling 
+4. bug with ls file. 
+5. Follow commands in lab file
+6. use ls -lt :: (seasnet version) to sort those files (oldest at bottom)
+7. use newly compiled :: has bug with ordering
+8. fix bug :: in ls.c :: look at sort_files(), use GDB to debug it. find and fix the bug
+   will use q_sort :: 
+   	    	      1. use qsort always from this point on. 

@@ -1,0 +1,5 @@
+1. Follow the steps indicated in the Lab section ::
+   	  * Clone diffutils from provided URL into a local DIR using git.
+	  * Store log of changes in diffutils into file 'git-log.txt'
+	  * Store generated tags for diffutils into file 'git-tags.txt'
+	  * 

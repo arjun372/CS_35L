@@ -1,0 +1,37 @@
+1.Compile 'C' only
+gcc -std=c99 binsortu.c
+
+2. double *x, y, z ; // only 
+
+3. pointers, pointers to functions
+
+4. Dynamic memory management :: 
+   a. malloc - constructor not called - allocates memory from sys heap. returns a VOID pointer to start of mem block
+      malloc CAN fail.  Handle this case correctly. 
+   b. free   - destrcutor not called
+   c. Realloc  :: May or may not change mem ardrress. always make sure its the correct 
+
+Memory for pointer :: in stack
+Memory for memiry  :: in heap
+
+ptr[1].BR.X = 5
+(ptr+1) -> BR.X = 5
+
+putchar, getchar  --> from stdin, stdout only
+
+scanf("%d", &i);
+
+gcc -g // for debugging
+
+Emacs GDB shortcuts
+C-x C-a C-b - Set a breakpoint at current line
+C-x C-a C-s - Step into
+    	C-n - step over
+gdb instructions
+
+b
+r
+p 
+c  - continure execution
+
+bt

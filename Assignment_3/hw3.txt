@@ -1,0 +1,39 @@
+Q1. 
+
+Q2.
+
+Q3. An error is reported (IndexError: list index out of range) and a traceback
+    is dumped on the console screen. It indicates that function choice declared
+    in library file random.py (Python 2.6) raises an error if seq (lines) is 
+    empty. The use of 'random.choice(self.lines)' in line 34 invokes this error
+    when attempting to read from a file with zero lines. The relevant lines are
+    listed below ::
+			# raises IndexError if seq is empty
+		   	IndexError: list index out of range
+
+Q4. When invoked with Python3, a syntax error is raised indicating that the use
+    of IOError is incorrect. This error is unrelated with the previous error, 
+    but exists since IOError has been modified as of version 3.0 to support one
+    argument only. Hence, the use of "(errno, strerror)" is incorrect syntax 
+    for Python3. This error can be fixed by modifying the try,except section
+    with the following code ::
+
+    	     	       --- except IOError as (errno, strerror):
+		       ---     parser.error("I/O error({0}): {1}".
+		       ---                  format(errno, strerror))
+
+		       +++ except IOError as strerror:
+        	       +++     parser.error("I/O error({0}): {1}".
+                       +++                  format(strerror))
+
+	Here, strerror is the only argument. This fixes the SyntaxError issue.
+	The randline.py file runs correctly when using python3 for non-empty 
+	files. However, for files that are empty (/dev/null), a similar error 
+	to the one described in Q2 persists. The error is listed as ::
+
+File "/usr/local/cs/Python-3.4.3/lib/python3.4/random.py", line 255, in choice
+raise IndexError('Cannot choose from an empty sequence')
+                   ## IndexError: Cannot choose from an empty sequence 
+
+	This error is again caused due to having passed a empty sequence to 
+	library file random.py . 

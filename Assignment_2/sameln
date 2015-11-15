@@ -1,0 +1,58 @@
+#!/bin/sh
+
+export LC_ALL='POSIX';
+REG_FILES=$$;
+TOP_DIR=$1;
+## Create list of regular files that are not sym links, or Dirs. 
+## Store list in temp file (PID)
+## Paranoia :: If $REG_FILES was created in $TOP_DIR, remove it.   
+function createSortedList() {
+ rm -f "CHECK.readable"
+ 
+ find $TOP_DIR -maxdepth 1 -type f -printf '%P\n' | sort |
+ sed '/'"$REG_FILES"'/d' > $REG_FILES;
+
+ while read innerLines
+do
+   test -r "$TOP_DIR/$innerLines"
+   if [ $? = 0 ]; then
+    echo "$innerLines" >> "CHECK.readable"
+   else
+    echo "unable to read file $TOP_DIR/$innerLines"
+   fi
+done < $REG_FILES
+
+ cat "CHECK.readable" > $REG_FILES
+ rm -f "CHECK.readable"
+}
+
+#| tr -d ' *' | sed "s|^\-||" > $LIST 
+function fixDuplicate() {
+ START=0
+ while read innerLine
+do
+   # Don't compare files with same name
+   if [ "{$1}" == "{$innerLine}" ]; then 
+      START=1
+      continue
+   fi
+   if [ $START -eq 1 ]; then
+      cmp -s "$TOP_DIR/$1" "$TOP_DIR/$innerLine"
+      if [ $? = 0 ]; then
+        ln -f "$TOP_DIR/$1" "$TOP_DIR/$innerLine"
+      fi
+   fi
+done < $REG_FILES
+}
+
+
+# if non-empty list of regular files exist ::
+createSortedList
+if [ -s $REG_FILES ]; then
+ while read line
+do
+ fixDuplicate $line
+done < $REG_FILES
+fi
+
+rm $REG_FILES

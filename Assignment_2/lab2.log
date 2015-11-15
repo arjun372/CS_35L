@@ -1,0 +1,32 @@
+1. Export locale to 'C' using command "export LC_ALL='C'"
+
+2. Write file 'words' as sorted file from the source '/usr/share/dict/words'.
+   Do this by using the sort command a redirecting STDOUT to a file.
+
+3. Retrive assign2.html using wget and store in a local directory.
+
+4. Commands :: 
+   a. tr -c 'A-Za-z' '[\n*]' : Replace all characters that are not part of 
+      the english alphabet with a newline character.
+
+   b. tr -cs 'A-Za-z' '[\n*]': Same as (a), except repeated instances of
+      characters in SET1 are suppressed into a single instance. Hence, only a 
+      single newline character is added.
+
+   c. tr -cs 'A-Za-z' '[\n*]' | sort : Same as (b), except the results are
+      sorting using the ASCII sorting rules. Hence, all similar lines are
+      grouped together. 
+
+   d. tr -cs 'A-Za-z' '[\n*]' | sort -u :: Same as (c), except upon sorting,
+      only outputs a line if it is not repeated. Hence each outputted line is
+      unique.
+
+   e. tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words :: Same as (d), except
+      compare the output with FILE 'words', and list lines with 3 columns per 
+      line. First column lists lines unique to FILE1(STDIN), second column 
+      lists lines unique to FILE2(word), thrid column lists lines common to
+      both FILE1 & FILE2.
+
+   f. tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words  :: Same as (e), 
+      except supress outputs for columns 2 and 3. Therefore, list lines unique
+      to FILE1 (STDIN).

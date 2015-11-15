@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export LC_ALL='C'
+
+sed 's/<[^>]\+>//g' < /dev/stdin | tr '[:upper:]' '[:lower:]' | tr '`' \''\' | tr -cd \'pk'mnwlhaeio ,u\' | tr -s ' ,' '\n' | sort -u  

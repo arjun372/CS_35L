@@ -1,0 +1,26 @@
+1. Fetch and extract buggy coreutils.
+2. follow instructions to reproduce the bug(s).
+3. The error message received upon building buggy coreutils is outputted below:
+	In file included from utimecmp.c:41:
+	utimens.h:2: error: conflicting types for 'futimens'
+	/usr/include/sys/stat.h:374: note: previous declaration of 'futimens' 
+	was here
+	make[3]: *** [utimecmp.o] Error 1
+
+4. This error indicates that function 'futimens' has been declared in file 
+   stat.h already. The patch renames this function to 'futimens', thereby 
+   fixing this error. Both the .h and .c files are patched to fix this error.
+
+5. The bug was fixed by applying the provided patch. The 2nd bug was reproduced
+   using the newly built version of buggy-coreutils. The output is displayed ::
+
+[arju@lnxsrv01 /tmp/lab5]$ TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+-rw-r--r-- 1 arju eeugrad 0 2015-10-30 01:23:52.142510324 +0000 now1
+-rw-r--r-- 1 arju eeugrad 0 2015-10-30 01:23:46.364293647 +0000 now
+-rw-r--r-- 1 arju eeugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+[arju@lnxsrv01 /tmp/lab5]$ TZ=UTC0 ~/CS_35L/Assignment_5/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+-rw-r--r-- 1 arju eeugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 arju eeugrad 0 2015-10-30 01:23:52.142510324 +0000 now1
+-rw-r--r-- 1 arju eeugrad 0 2015-10-30 01:23:46.364293647 +0000 now 
+
+6. 

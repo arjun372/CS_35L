@@ -1,0 +1,26 @@
+2015-10-29   Arjun  <arju@lnxsrv01.seas.ucla.edu>
+
+        * timespec.h (longdiff): New macro. Stops integer overflow from
+        affecting sorting based on timestamp. Fixes a bug where files 
+        with timestamps very far in the past were treated as if they were
+        in the future.
+
+--- coreutils-with-bug/lib/timespec.h	2015-10-29 21:14:48.235513000 -0700
++++ coreutils-with-bug/lib/timespec.h	2005-09-21 23:05:39.000000000 -0700
+@@ -31,7 +31,6 @@
+ #  endif
+ # endif
+ 
+-#define longdiff(a, b) ((a) < (b) ? -1 : (a) > (b))
+ # if ! HAVE_STRUCT_TIMESPEC
+ /* Some systems don't define this struct, e.g., AIX 4.1, Ultrix 4.3.  */
+ struct timespec
+@@ -46,7 +45,7 @@
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = longdiff(a.tv_sec, b.tv_sec);
++  int diff = a.tv_sec - b.tv_sec;
+   return diff ? diff : a.tv_nsec - b.tv_nsec;
+ }
+ 
