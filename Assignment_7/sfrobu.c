@@ -9,8 +9,10 @@
 #define TRUE 1
 
 static int frobcmp (char const *a, char const *b) 
-{ /* Iterate over arrays (a,b) while neither terminates & elements of both are equal */
-  while( (*a!=EOS) && (*b!=EOS) && (*a==*b) ) {
+{ 
+  /* Iterate over arrays (a,b) while neither terminates & elements of both are equal */
+  while( (*a!=EOS) && (*b!=EOS) && (*a==*b) ) 
+    {
       a++;
       b++;
     }
@@ -19,71 +21,81 @@ static int frobcmp (char const *a, char const *b)
 }
 
 static int qsort_compatible_frobcmp(const void *a, const void *b)
-{return frobcmp(*((char const **)a),*((char const **)b));}
+{
+  return frobcmp(*((char const **)a),*((char const **)b));
+}
 
 /* Print array over STDOUT, including EOS character */
-static void displayStream(char **list,const unsigned int size){
+static void displayStream(char **list,const unsigned int size)
+{
   unsigned int word_iterator, char_iterator;
-  for(word_iterator = 0; word_iterator < size; word_iterator++) {
-    char_iterator = 0;
-    while (list[word_iterator][char_iterator++] != EOS)
-      putchar(list[word_iterator][char_iterator-1]);
-    putchar(EOS);
+  for(word_iterator = 0; word_iterator < size; word_iterator++) 
+  {
+      char_iterator = 0;
+      while (list[word_iterator][char_iterator++] != EOS)
+	putchar(list[word_iterator][char_iterator-1]);
+      //write(0,&(list[word_iterator][char_iterator-1]),1);
+      putchar(EOS);
   } 
-} 
+}
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv) 
+{
   char **word_list = malloc(BUFFER_SIZE * sizeof(char *));
   char *single_word_buffer = malloc(WRD_BUF_SIZE * sizeof(char));
   char *complete_word_buffer;
   int EXIT_CODE = 0, single_c;
   unsigned int iterator = 0, word_size = 0, word_buffer_size = WRD_BUF_SIZE, list_size = 0, list_buffer_size = BUFFER_SIZE;
 
-  if(!word_list || !single_word_buffer) { 
+  if(!word_list || !single_word_buffer) 
+  { 
     EXIT_CODE = 1; 
     goto clean_exit; 
   }
 
   while(TRUE) /* Read single byte-by-byte until loop is interrupted due to EOS, EOF or error */
+  {
+    if((single_c = getchar()) == EOF || (char)single_c == EOS)
     {
-      if((single_c = getchar()) == EOF || (char)single_c == EOS)
-	{
-	  if(word_size == 0 && (char)single_c != EOS) {
-	    EXIT_CODE = 0; 
-	    goto clean_exit;
-	  }
+      if(word_size == 0 && (char)single_c != EOS) 
+      {
+	EXIT_CODE = 0; 
+	goto clean_exit;
+      }
 
-	  complete_word_buffer = malloc((word_size+1) * sizeof(char));
-          if(!complete_word_buffer)
-            goto clear_buffers_exit;
+      complete_word_buffer = malloc((word_size+1) * sizeof(char));
+      if(!complete_word_buffer)
+	goto clear_buffers_exit;
 
-          for(iterator = 0; iterator < word_size; iterator++)
-            complete_word_buffer[iterator] = single_word_buffer[iterator];
-	  complete_word_buffer[word_size] = EOS;
-	  word_size = 0;
+      for(iterator = 0; iterator < word_size; iterator++)
+	complete_word_buffer[iterator] = single_word_buffer[iterator];
+      
+      complete_word_buffer[word_size] = EOS;
+      word_size = 0;
 
-	  if(list_size == list_buffer_size) {
-	      list_buffer_size += BUFFER_SIZE;
-	      word_list = realloc(word_list,(list_buffer_size * sizeof(char *)));
-	      if(!word_list)
-		goto clear_buffers_exit;
-	    }
-	  word_list[list_size++] = complete_word_buffer;   	  
-	  if(single_c != EOF)
-	    continue;
-	  else
-	    break;
-	}
-
-      if(word_size == word_buffer_size)
-        {
-          word_buffer_size += WRD_BUF_SIZE;
-          single_word_buffer = realloc(single_word_buffer,(word_buffer_size * sizeof(char)));
-          if(!single_word_buffer)
-	    goto clear_buffers_exit;
-        }
-      single_word_buffer[word_size++] = (char)single_c;
+      if(list_size == list_buffer_size) 
+      {
+	list_buffer_size += BUFFER_SIZE;
+	word_list = realloc(word_list,(list_buffer_size * sizeof(char *)));
+	if(!word_list)
+	  goto clear_buffers_exit;
+      }
+      word_list[list_size++] = complete_word_buffer;   	  
+      if(single_c != EOF)
+	continue;
+      else
+	break;
     }
+
+    if(word_size == word_buffer_size)
+    {
+      word_buffer_size += WRD_BUF_SIZE;
+      single_word_buffer = realloc(single_word_buffer,(word_buffer_size * sizeof(char)));
+      if(!single_word_buffer)
+	goto clear_buffers_exit;
+    }
+    single_word_buffer[word_size++] = (char)single_c;
+  }
 
   qsort(word_list,list_size,sizeof(char *),qsort_compatible_frobcmp);
   displayStream(word_list,list_size);
