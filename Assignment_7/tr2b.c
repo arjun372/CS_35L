@@ -1,33 +1,65 @@
-#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#define readIn(buf) (buf = getchar())
+#define writeOut(buf) putchar(buf)
+#define TRUE 1
+#define FALSE 0
 
-int main(int argc, char** argv) {  
-  unsigned from_len = strlen(argv[1]), to_len = strlen(argv[2]);
-  
-  /* Return error if from & to dont have the same size */
-  if(from_len != to_len) {
-    fprintf(stdout,"from and to are not the same length\n");
-    exit(1);
-  }
+/* Returns string length in O(n) time */
+static size_t arrlen(char* arr)
+{
+  size_t len = 0;
+  while(arr[len++]!='\0')
+    continue;
+  return (len-1);
+}
 
-  /* Return error if from has duplicates */
-  int i,j;
-  for(i=0;i<from_len;i++)
-    for(j=i+1;j<from_len;j++)
-      if(argv[1][j] == argv[1][i]) {
-	fprintf(stdout,"'from' contains duplicates \n");
-        exit(1);
-      }
+/* Checks for duplicate bytes in O(n) time */   
+static unsigned containsDuplicates(char* arr,size_t len)
+{
+  static char hash[256]; 
+  size_t i;
+
+  for(i=0;i<len;i++)
+    {
+      if(hash[(size_t)arr[i]] == TRUE)
+	return TRUE;
+      else
+	hash[(size_t)arr[i]] = TRUE;
+    }
+  return FALSE;
+}
+
+int main(int argc, char** argv)
+{  
+  size_t from_len = arrlen(argv[1]);
+
+  /* Return error if 'from' & 'to' don't have the same size */
+  if(from_len != arrlen(argv[2])) 
+    goto ERROR_LEN_EXIT;
+
+  /* Return error if 'from' contains duplicates */
+  if(containsDuplicates(argv[1],from_len))
+    goto ERROR_DUP_EXIT;
 
   int buffer;
-  while ((buffer = getchar()) != EOF) {
-    
+  size_t i;
+  while (readIn(buffer) != EOF) 
+  {    
     /* If read byte belongs to 'from', then translate it */
     for(i=0;i<from_len;i++)
       if(buffer == argv[1][i])
 	buffer = argv[2][i];
 
-    putchar(buffer);
+    writeOut(buffer);
   } 
+
   exit(0);
+
+ ERROR_LEN_EXIT:
+    fprintf(stdout,"'from' and 'to' are not the same length\n");
+    exit(1);
+ ERROR_DUP_EXIT:
+    fprintf(stdout,"'from' contains duplicates \n");
+    exit(1);
 }

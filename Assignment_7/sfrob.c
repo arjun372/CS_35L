@@ -8,12 +8,14 @@
 #define WRD_BUF_SIZE 512
 #define TRUE 1
 
+unsigned comparisons = 0;
 static int frobcmp (char const *a, char const *b) 
 { /* Iterate over arrays (a,b) while neither terminates & elements of both are equal */
   while( (*a!=EOS) && (*b!=EOS) && (*a==*b) ) {
       a++;
       b++;
     }
+  comparisons++;
   /* Return 1 if (a>b), -1 if (b>a), (a-b) otherwise */
   return ((*a!=EOS)&&(*b==EOS)) ? 1 : ((*a==EOS)&&(*b!=EOS) ? -1 : (decode(*a)-decode(*b)));
 }
@@ -28,7 +30,7 @@ static void displayStream(char **list,const unsigned int size){
     char_iterator = 0;
     while (list[word_iterator][char_iterator++] != EOS)
       putchar(list[word_iterator][char_iterator-1]);
-    putchar(EOS);
+      putchar(EOS);
   } 
 } 
 
@@ -87,7 +89,7 @@ int main (int argc, char **argv) {
 
   qsort(word_list,list_size,sizeof(char *),qsort_compatible_frobcmp);
   displayStream(word_list,list_size);
-
+  fprintf(stderr,"Comparisons: %u\n",comparisons);
  clear_buffers_exit:
   for(iterator = 0; iterator < (list_size-1); iterator++)
     free(word_list[iterator]);

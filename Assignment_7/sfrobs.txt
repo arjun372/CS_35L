@@ -1,0 +1,24 @@
+Performance comparison :: Time
+----------------------------------------
+n	    sfrobu	sfrob	sfrobs
+1	    0.002	0.002	0.005
+10	    0.004	0.002	0.005
+100	    0.019	0.003	0.005
+1000	    0.187	0.014	0.016
+10000	    1.362	0.122	0.025
+100000	    11.969	0.975	0.241
+
+Performance :: comparisons vs input-lines (sfrobu)
+--------------------------------------------------
+n	Comparisons
+1	3
+10	48
+100	475
+1000	8424
+10000	118736
+100000	1545434
+
+The size of comparisons grew in a linear manner for sfrobu, with linear regression ::
+
+  y  = 15.418x
+R^2  = 0.99932

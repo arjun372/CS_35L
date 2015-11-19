@@ -1,0 +1,42 @@
+1&2. As the spec indicates, the first step is to write functions tr2b & tr2u and make a performance comparison between the two implementations. I did this by first writing tr2b.c in its entirety and 
+then minimizing the line edits to 4 lines. Here is a diff output of the files tr2b.c tr2u.c ::
+
+     	  3,4c3,4
+	  < #define readIn(buf) (buf = getchar())
+	  < #define writeOut(buf) putchar(buf)	
+	  ---
+	  > #define readIn(buf) read(0,&buf,1)
+	  > #define writeOut(buf) write(1,&buf,1)
+	  45c45
+	  <   int buffer;
+	  ---
+	  >   char buffer;
+	  47c47
+	  <   while (readIn(buffer) != EOF) 
+	  ---
+	  >   while (readIn(buffer) > 0) 
+
+I have used function-like macros to change the implementation for buffered functions putchar,getchar to system-calls write,read. In order to implement a function that checks for duplicated bytes in 
+the string 'from' I used a hash map, placing each encountered byte in it's unqiue bucket. The time complexity of this function was O(n).   
+
+3. strace on tr2b & tr2u resulted in the following # of lines of output for a 5000000 byte file ::
+
+   strace (tr2b) :: 	 184 lines
+   strace (tr2u) :: 10000026 lines
+
+4. Upon measuring the running time of each function, it was clear to see that the unbuffered function spent a significantly longer time running system calls. Here is the output of both ::
+
+   time ./tr2b abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ < output.txt > output_b
+
+   	real 0m0.420s
+	user 0m0.340s
+	sys  0m0.012s
+
+   time ./tr2u abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ < output.txt > output_u
+
+   	real 0m5.955s
+	user 0m0.347s
+	sys  0m5.538s
+
+!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|--
