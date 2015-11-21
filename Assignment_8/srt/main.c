@@ -151,24 +151,24 @@ enum { max_color = 255 };
 /* z value for ray */
 enum { z = 1 };
 
- scene_t scene = create_sphereflake_scene( sphereflake_recursion );
-    Vec3 camera_pos;
-    set( camera_pos, 0., 0., -4. );
-    Vec3 camera_dir;
-    set( camera_dir, 0., 0., 1. );
-    Vec3 bg_color;
-    set( bg_color, 0.8, 0.8, 1 );
-
-double camera_fov = 75.0 * (PI/180.0);
-double pixel_dxy  = tan(0.5*camera_fov)/((double)width*0.5);
-double subsample_dxy = halfSamples ? pixel_dxy/((double)halfSamples*2.0) : pixel_dxy;    
 static int workload[width];
 static float traceData[width][height][3];
 static int startPos = 0;
 
 void *doWork(void *startPos)
 {
-  long offset = (long) startPos;
+	long offset = (long) startPos;
+	scene_t scene = create_sphereflake_scene( sphereflake_recursion );
+    Vec3 camera_pos;
+    set( camera_pos, 0., 0., -4. );
+    Vec3 camera_dir;
+    set( camera_dir, 0., 0., 1. );
+    Vec3 bg_color;
+    set( bg_color, 0.8, 0.8, 1 );
+    double camera_fov = 75.0 * (PI/180.0);
+    double pixel_dxy  = tan(0.5*camera_fov)/((double)width*0.5);
+	double subsample_dxy = halfSamples ? pixel_dxy/((double)halfSamples*2.0) : pixel_dxy;    
+
   for(int px=(int)offset,px<width;++px)
   {
   	const double x = pixel_dxy * ((double)( px-(width/2) ));
