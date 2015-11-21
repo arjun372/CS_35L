@@ -161,12 +161,6 @@ main( int argc, char **argv )
       fprintf( stderr, "%s: usage: %s NTHREADS\n", argv[0], argv[0] );
       return 1;
     }
-    // Assume nthreads >= 1 ::
-    if( nthreads != 1 )
-    {
-      fprintf( stderr, "%s: Multithreading is not supported yet.\n", argv[0] );
-      return 1;
-    }
 
     scene_t scene = create_sphereflake_scene( sphereflake_recursion );
 
@@ -185,23 +179,17 @@ main( int argc, char **argv )
     Vec3 bg_color;
     set( bg_color, 0.8, 0.8, 1 );
 
-    const double pixel_dx = tan( 0.5*camera_fov ) / ((double)width*0.5);
-    const double pixel_dy = tan( 0.5*camera_fov ) / ((double)height*0.5);
-    const double subsample_dx
-        = halfSamples  ? pixel_dx / ((double)halfSamples*2.0)
-                       : pixel_dx;
-    const double subsample_dy
-        = halfSamples ? pixel_dy / ((double)halfSamples*2.0)
-                      : pixel_dy;
+    const double pixel_dxy = tan( 0.5*camera_fov ) / ((double)width*0.5);
+    const double subsample_dxy = halfSamples  ? pixel_dxy / ((double)halfSamples*2.0) : pixel_dxy;
 
 
     /* for every pixel */
     for( int px=0; px<width; ++px )
     {
-        const double x = pixel_dx * ((double)( px-(width/2) ));
+        const double x = pixel_dxy * ((double)( px-(width/2) ));
         for( int py=0; py<height; ++py )
         {
-            const double y = pixel_dy * ((double)( py-(height/2) ));
+            const double y = pixel_dxy * ((double)( py-(height/2) ));
             Vec3 pixel_color;
             set( pixel_color, 0, 0, 0 );
 
@@ -209,8 +197,8 @@ main( int argc, char **argv )
             {
                 for( int ys=-halfSamples; ys<=halfSamples; ++ys )
                 {
-                    double subx = x + ((double)xs)*subsample_dx;
-                    double suby = y + ((double)ys)*subsample_dy;
+                    double subx = x + ((double)xs)*subsample_dxy;
+                    double suby = y + ((double)ys)*subsample_dxy;
 
                     /* construct the ray coming out of the camera, through
                      * the screen at (subx,suby)
@@ -226,7 +214,7 @@ main( int argc, char **argv )
                     copy( sample_color, bg_color );
                     /* trace the ray from the camera that
                      * passes through this pixel */
-                    trace( &scene, sample_color, &pixel_ray, 0 );
+		    trace( &scene, sample_color, &pixel_ray, 0 );
                     /* sum color for subpixel AA */
                     add( pixel_color, pixel_color, sample_color );
                 }
