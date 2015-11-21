@@ -142,7 +142,7 @@ enum { height = 131 };
 enum { width = 131 };
 
 /* antialiasing samples, more is higher quality, 0 for no AA */
-enum { halfSamples = 4 };
+enum { halfSamples = 16 };
 /******/
 
 /* color depth to output for ppm */
@@ -153,51 +153,50 @@ enum { z = 1 };
 
 static int workload[width];
 static float traceData[width][height][3];
-static int startPos = 0;
+
+scene_t scene;
+Vec3 camera_pos;
+Vec3 camera_dir;
+Vec3 bg_color;
+double camera_fov;
+double pixel_dxy;
+double subsample_dxy;
 
 void *doWork(void *startPos)
 {
-	long offset = (long) startPos;
-	scene_t scene = create_sphereflake_scene( sphereflake_recursion );
-    Vec3 camera_pos;
-    set( camera_pos, 0., 0., -4. );
-    Vec3 camera_dir;
-    set( camera_dir, 0., 0., 1. );
-    Vec3 bg_color;
-    set( bg_color, 0.8, 0.8, 1 );
-    double camera_fov = 75.0 * (PI/180.0);
-    double pixel_dxy  = tan(0.5*camera_fov)/((double)width*0.5);
-	double subsample_dxy = halfSamples ? pixel_dxy/((double)halfSamples*2.0) : pixel_dxy;    
-
-  for(int px=(int)offset,px<width;++px)
+    long offset = (long) startPos;
+    double x,y,subx,suby;
+    Vec3 pixel_color,pixel_target,sample_color;
+    ray_t pixel_ray;
+    int px,py,xs,ys;
+    for(px=(int)offset;px<width; px++)
   {
-  	const double x = pixel_dxy * ((double)( px-(width/2) ));
-    for( int py=0; py<height; ++py )
+    if(workload[px])
+      continue;
+
+    workload[px] = 1;
+    x = pixel_dxy * ((double)( px-(width/2) ));
+    for(py=0; py<height; ++py )
     {
-        const double y = pixel_dxy * ((double)( py-(height/2) ));
-        Vec3 pixel_color;
+        y = pixel_dxy * ((double)( py-(height/2) ));
         set(pixel_color, 0, 0, 0);
 
-        for( int xs=-halfSamples; xs<=halfSamples; ++xs )
+        for(xs=-halfSamples; xs<=halfSamples; ++xs )
         {
-            for( int ys=-halfSamples; ys<=halfSamples; ++ys )
+            for(ys=-halfSamples; ys<=halfSamples; ++ys )
             {
-                double subx = x + ((double)xs)*subsample_dxy;
-                double suby = y + ((double)ys)*subsample_dxy;
+                subx = x + ((double)xs)*subsample_dxy;
+                suby = y + ((double)ys)*subsample_dxy;
 
             /* construct the ray coming out of the camera, through the screen at (subx,suby) */
-                ray_t pixel_ray;
                 copy( pixel_ray.org, camera_pos );
-                Vec3 pixel_target;
                 set( pixel_target, subx, suby, z );
                 sub( pixel_ray.dir, pixel_target, camera_pos );
                 norm( pixel_ray.dir, pixel_ray.dir );
-
-                Vec3 sample_color;
                 copy( sample_color, bg_color );
                     /* trace the ray from the camera that
                      * passes through this pixel */
-		    	trace( &scene, sample_color, &pixel_ray, 0 );
+		trace( &scene, sample_color, &pixel_ray, 0 );
                     /* sum color for subpixel AA */
                 add( pixel_color, pixel_color, sample_color );
             }
@@ -213,22 +212,22 @@ void *doWork(void *startPos)
             }
 
             /* done, final floating point color values are in pixel_color */
-            float scaled_color[3];
-            scaled_color[0] = gamma( pixel_color[0] ) * max_color;
-            scaled_color[1] = gamma( pixel_color[1] ) * max_color;
-            scaled_color[2] = gamma( pixel_color[2] ) * max_color;
+	    // float scaled_color[3];
+            //scaled_color[0] = gamma( pixel_color[0] ) * max_color;
+	    // scaled_color[1] = gamma( pixel_color[1] ) * max_color;
+	    // scaled_color[2] = gamma( pixel_color[2] ) * max_color;
 
             /* enforce caps, replace with real gamma */
-            for( int i=0; i<3; i++)
-                scaled_color[i] = max( min(scaled_color[i], 255), 0);
+            //for( int i=0; i<3; i++)
+	      //     scaled_color[i] = max( min(scaled_color[i], 255), 0);
 
             /* write this pixel out to disk. ppm is forgiving about whitespace,
              * but has a maximum of 70 chars/line, so use one line per pixel
              */
 
-   			traceData[offset][py][0] =  scaled_color[0];
-   			traceData[offset][py][1] =  scaled_color[1];
-   			traceData[offset][py][2] =  scaled_color[2];
+	    traceData[px][py][0] =  max(min((gamma(pixel_color[0])*max_color), 255), 0);
+	    traceData[px][py][1] =  max(min((gamma(pixel_color[1])*max_color), 255), 0);
+	    traceData[px][py][2] =  max(min((gamma(pixel_color[2])*max_color), 255), 0);
         }
   }
   pthread_exit(NULL);
@@ -244,14 +243,19 @@ int main( int argc, char **argv )
       fprintf( stderr, "%s: usage: %s NTHREADS\n", argv[0], argv[0] );
       return 0;
     }
-
-   
+    
+    scene = create_sphereflake_scene(sphereflake_recursion);
+    set( camera_pos, 0., 0., -4. );
+    set( camera_dir, 0., 0., 1. );
+    set( bg_color, 0.8, 0.8, 1 );
+    camera_fov = 75.0 * (PI/180.0);
+    pixel_dxy  = tan(0.5*camera_fov)/((double)width*0.5);
+    subsample_dxy = halfSamples ? pixel_dxy/((double)halfSamples*2.0) : pixel_dxy;
 
     /* Write the image format header */
     /* P3 is an ASCII-formatted, color, PPM file */
     printf( "P3\n%d %d\n%d\n", width, height, max_color );
     printf( "# Rendering scene with %d spheres and %d lights\n",scene.sphere_count,scene.light_count );
-
    
     pthread_t thread_pool[nthreads];
     int running_Workers = 0;
@@ -267,16 +271,17 @@ int main( int argc, char **argv )
 	 return 1;
        }
 
-     //joing
-     return 0;
-  
-    /* for every pixel */
-    /*for( int px=0; px<width; ++px )
-    {
+     for (int i = 0; i < nthreads; i++)
+       pthread_join(thread_pool[i], NULL);
 
-    }*/
+     free_scene(&scene);
 
-    free_scene( &scene );
+     for(int w=0;w<width;w++)
+       {
+	 for(int h=0;h<height;h++)
+	   printf( "%.0f %.0f %.0f\n",traceData[w][h][0], traceData[w][h][1], traceData[w][h][2] );
+	 printf("\n");
+       }
 
     if( ferror( stdout ) || fclose( stdout ) != 0 )
     {
