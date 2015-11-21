@@ -16,12 +16,12 @@
 CC = gcc
 CFLAGS = -std=gnu99 -g -O2 -Wall -Wextra -Wno-unused-parameter
 LDLIBS = -lm
-
+LDFLAGS = -lpthread
 all: srt
 
 srt_objects = main.o raymath.o shaders.o
 srt: $(srt_objects)
-	$(CC) $(CFLAGS) -o $@ $(srt_objects) $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(srt_objects) $(LDLIBS)
 
 main.o raymath.o: raymath.h
 main.o shaders.o: shaders.h

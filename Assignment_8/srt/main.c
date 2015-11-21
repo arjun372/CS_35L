@@ -151,15 +151,33 @@ enum { max_color = 255 };
 /* z value for ray */
 enum { z = 1 };
 
-int
-main( int argc, char **argv )
+//double camera_fov = 75.0 * (PI/180.0);
+//double pixel_dxy = tan( 0.5*camera_fov ) / ((double)width*0.5);
+//double subsample_dxy = halfSamples  ? pixel_dxy / ((double)halfSamples*2.0) : pixel_dxy;
+
+static int workload[width];
+static float traceData[width][height][3];
+static int startPos = 0;
+void *doWork(void *startPos)
 {
+  long offset = (long) startPos;
+  
+  while()
+  
+  pthread_exit(NULL);
+} 
+
+int main( int argc, char **argv )
+{
+    const double camera_fov = 75.0 * (PI/180.0);
+    const double pixel_dxy  = tan(0.5*camera_fov)/((double)width*0.5);
+    const double subsample_dxy = halfSamples ? pixel_dxy/((double)halfSamples*2.0) : pixel_dxy;    
     int nthreads = argc == 2 ? atoi( argv[1] ) : 0;
 
-    if( nthreads < 1 )
+    if( nthreads <= 1 )
     {
       fprintf( stderr, "%s: usage: %s NTHREADS\n", argv[0], argv[0] );
-      return 1;
+      return 0;
     }
 
     scene_t scene = create_sphereflake_scene( sphereflake_recursion );
@@ -167,22 +185,32 @@ main( int argc, char **argv )
     /* Write the image format header */
     /* P3 is an ASCII-formatted, color, PPM file */
     printf( "P3\n%d %d\n%d\n", width, height, max_color );
-    printf( "# Rendering scene with %d spheres and %d lights\n",
-            scene.sphere_count,
-            scene.light_count );
+    printf( "# Rendering scene with %d spheres and %d lights\n",scene.sphere_count,scene.light_count );
 
     Vec3 camera_pos;
     set( camera_pos, 0., 0., -4. );
     Vec3 camera_dir;
     set( camera_dir, 0., 0., 1. );
-    const double camera_fov = 75.0 * (PI/180.0);
     Vec3 bg_color;
     set( bg_color, 0.8, 0.8, 1 );
 
-    const double pixel_dxy = tan( 0.5*camera_fov ) / ((double)width*0.5);
-    const double subsample_dxy = halfSamples  ? pixel_dxy / ((double)halfSamples*2.0) : pixel_dxy;
+    pthread_t thread_pool[nthreads];
+    int running_Workers = 0;
+    for(int worker_n=0; worker_n < nthreads; worker_n++)
+      {
+	long startPos = worker_n*width/nthreads;
+	running_Workers += pthread_create(&thread_pool[worker_n], NULL, doWork, (void *)startPos) ? 0 : 1;
+      } 
 
+     if(!running_Workers)
+       {
+	 fprintf(stderr, "No threads were created! Terminating");
+	 return 1;
+       }
 
+     //joing
+     return 0;
+  
     /* for every pixel */
     for( int px=0; px<width; ++px )
     {
