@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-
+#include <pthread.h>
 
 static double dirs[6][3] =
 { {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1} };
@@ -161,7 +161,7 @@ main( int argc, char **argv )
       fprintf( stderr, "%s: usage: %s NTHREADS\n", argv[0], argv[0] );
       return 1;
     }
-
+    // Assume nthreads >= 1 ::
     if( nthreads != 1 )
     {
       fprintf( stderr, "%s: Multithreading is not supported yet.\n", argv[0] );
@@ -193,6 +193,7 @@ main( int argc, char **argv )
     const double subsample_dy
         = halfSamples ? pixel_dy / ((double)halfSamples*2.0)
                       : pixel_dy;
+
 
     /* for every pixel */
     for( int px=0; px<width; ++px )
