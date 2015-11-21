@@ -151,42 +151,7 @@ enum { max_color = 255 };
 /* z value for ray */
 enum { z = 1 };
 
-//double camera_fov = 75.0 * (PI/180.0);
-//double pixel_dxy = tan( 0.5*camera_fov ) / ((double)width*0.5);
-//double subsample_dxy = halfSamples  ? pixel_dxy / ((double)halfSamples*2.0) : pixel_dxy;
-
-static int workload[width];
-static float traceData[width][height][3];
-static int startPos = 0;
-void *doWork(void *startPos)
-{
-  long offset = (long) startPos;
-  
-  while()
-  
-  pthread_exit(NULL);
-} 
-
-int main( int argc, char **argv )
-{
-    const double camera_fov = 75.0 * (PI/180.0);
-    const double pixel_dxy  = tan(0.5*camera_fov)/((double)width*0.5);
-    const double subsample_dxy = halfSamples ? pixel_dxy/((double)halfSamples*2.0) : pixel_dxy;    
-    int nthreads = argc == 2 ? atoi( argv[1] ) : 0;
-
-    if( nthreads <= 1 )
-    {
-      fprintf( stderr, "%s: usage: %s NTHREADS\n", argv[0], argv[0] );
-      return 0;
-    }
-
-    scene_t scene = create_sphereflake_scene( sphereflake_recursion );
-
-    /* Write the image format header */
-    /* P3 is an ASCII-formatted, color, PPM file */
-    printf( "P3\n%d %d\n%d\n", width, height, max_color );
-    printf( "# Rendering scene with %d spheres and %d lights\n",scene.sphere_count,scene.light_count );
-
+ scene_t scene = create_sphereflake_scene( sphereflake_recursion );
     Vec3 camera_pos;
     set( camera_pos, 0., 0., -4. );
     Vec3 camera_dir;
@@ -194,59 +159,49 @@ int main( int argc, char **argv )
     Vec3 bg_color;
     set( bg_color, 0.8, 0.8, 1 );
 
-    pthread_t thread_pool[nthreads];
-    int running_Workers = 0;
-    for(int worker_n=0; worker_n < nthreads; worker_n++)
-      {
-	long startPos = worker_n*width/nthreads;
-	running_Workers += pthread_create(&thread_pool[worker_n], NULL, doWork, (void *)startPos) ? 0 : 1;
-      } 
+double camera_fov = 75.0 * (PI/180.0);
+double pixel_dxy  = tan(0.5*camera_fov)/((double)width*0.5);
+double subsample_dxy = halfSamples ? pixel_dxy/((double)halfSamples*2.0) : pixel_dxy;    
+static int workload[width];
+static float traceData[width][height][3];
+static int startPos = 0;
 
-     if(!running_Workers)
-       {
-	 fprintf(stderr, "No threads were created! Terminating");
-	 return 1;
-       }
-
-     //joing
-     return 0;
-  
-    /* for every pixel */
-    for( int px=0; px<width; ++px )
+void *doWork(void *startPos)
+{
+  long offset = (long) startPos;
+  for(int px=(int)offset,px<width;++px)
+  {
+  	const double x = pixel_dxy * ((double)( px-(width/2) ));
+    for( int py=0; py<height; ++py )
     {
-        const double x = pixel_dxy * ((double)( px-(width/2) ));
-        for( int py=0; py<height; ++py )
+        const double y = pixel_dxy * ((double)( py-(height/2) ));
+        Vec3 pixel_color;
+        set(pixel_color, 0, 0, 0);
+
+        for( int xs=-halfSamples; xs<=halfSamples; ++xs )
         {
-            const double y = pixel_dxy * ((double)( py-(height/2) ));
-            Vec3 pixel_color;
-            set( pixel_color, 0, 0, 0 );
-
-            for( int xs=-halfSamples; xs<=halfSamples; ++xs )
+            for( int ys=-halfSamples; ys<=halfSamples; ++ys )
             {
-                for( int ys=-halfSamples; ys<=halfSamples; ++ys )
-                {
-                    double subx = x + ((double)xs)*subsample_dxy;
-                    double suby = y + ((double)ys)*subsample_dxy;
+                double subx = x + ((double)xs)*subsample_dxy;
+                double suby = y + ((double)ys)*subsample_dxy;
 
-                    /* construct the ray coming out of the camera, through
-                     * the screen at (subx,suby)
-                     */
-                    ray_t pixel_ray;
-                    copy( pixel_ray.org, camera_pos );
-                    Vec3 pixel_target;
-                    set( pixel_target, subx, suby, z );
-                    sub( pixel_ray.dir, pixel_target, camera_pos );
-                    norm( pixel_ray.dir, pixel_ray.dir );
+            /* construct the ray coming out of the camera, through the screen at (subx,suby) */
+                ray_t pixel_ray;
+                copy( pixel_ray.org, camera_pos );
+                Vec3 pixel_target;
+                set( pixel_target, subx, suby, z );
+                sub( pixel_ray.dir, pixel_target, camera_pos );
+                norm( pixel_ray.dir, pixel_ray.dir );
 
-                    Vec3 sample_color;
-                    copy( sample_color, bg_color );
+                Vec3 sample_color;
+                copy( sample_color, bg_color );
                     /* trace the ray from the camera that
                      * passes through this pixel */
-		    trace( &scene, sample_color, &pixel_ray, 0 );
+		    	trace( &scene, sample_color, &pixel_ray, 0 );
                     /* sum color for subpixel AA */
-                    add( pixel_color, pixel_color, sample_color );
-                }
+                add( pixel_color, pixel_color, sample_color );
             }
+        }
 
             /* at this point, have accumulated (2*halfSamples)^2 samples,
              * so need to average out the final pixel color
@@ -270,11 +225,56 @@ int main( int argc, char **argv )
             /* write this pixel out to disk. ppm is forgiving about whitespace,
              * but has a maximum of 70 chars/line, so use one line per pixel
              */
-            printf( "%.0f %.0f %.0f\n",
-		    scaled_color[0], scaled_color[1], scaled_color[2] );
+
+   			traceData[offset][py][0] =  scaled_color[0];
+   			traceData[offset][py][1] =  scaled_color[1];
+   			traceData[offset][py][2] =  scaled_color[2];
         }
-        printf( "\n" );
+  }
+  pthread_exit(NULL);
+} 
+
+int main( int argc, char **argv )
+{
+    
+    int nthreads = argc == 2 ? atoi( argv[1] ) : 0;
+
+    if( nthreads <= 1 )
+    {
+      fprintf( stderr, "%s: usage: %s NTHREADS\n", argv[0], argv[0] );
+      return 0;
     }
+
+   
+
+    /* Write the image format header */
+    /* P3 is an ASCII-formatted, color, PPM file */
+    printf( "P3\n%d %d\n%d\n", width, height, max_color );
+    printf( "# Rendering scene with %d spheres and %d lights\n",scene.sphere_count,scene.light_count );
+
+   
+    pthread_t thread_pool[nthreads];
+    int running_Workers = 0;
+    for(int worker_n=0; worker_n < nthreads; worker_n++)
+      {
+	long startPos = worker_n*width/nthreads;
+	running_Workers += pthread_create(&thread_pool[worker_n], NULL, doWork, (void *)startPos) ? 0 : 1;
+      } 
+
+     if(!running_Workers)
+       {
+	 fprintf(stderr, "No threads were created! Terminating");
+	 return 1;
+       }
+
+     //joing
+     return 0;
+  
+    /* for every pixel */
+    /*for( int px=0; px<width; ++px )
+    {
+
+    }*/
 
     free_scene( &scene );
 
