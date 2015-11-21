@@ -138,11 +138,11 @@ free_scene( scene_t* arg )
 enum { sphereflake_recursion = 3 };
 
 /* output image size */
-enum { height = 131 };
-enum { width = 131 };
+enum { height = 786};
+enum { width = 786};
 
 /* antialiasing samples, more is higher quality, 0 for no AA */
-enum { halfSamples = 16 };
+enum { halfSamples = 8 };
 /******/
 
 /* color depth to output for ppm */
