@@ -138,11 +138,11 @@ free_scene( scene_t* arg )
 enum { sphereflake_recursion = 3 };
 
 /* output image size */
-enum { height = 786};
-enum { width = 786};
+enum { height = 131};
+enum { width = 131};
 
 /* antialiasing samples, more is higher quality, 0 for no AA */
-enum { halfSamples = 8 };
+enum { halfSamples = 4 };
 /******/
 
 /* color depth to output for ppm */
@@ -175,6 +175,7 @@ void *doWork(void *startPos)
       continue;
 
     workload[px] = 1;
+
     x = pixel_dxy * ((double)( px-(width/2) ));
     for(py=0; py<height; ++py )
     {
@@ -235,10 +236,9 @@ void *doWork(void *startPos)
 
 int main( int argc, char **argv )
 {
-    
     int nthreads = argc == 2 ? atoi( argv[1] ) : 0;
 
-    if( nthreads <= 1 )
+    if( nthreads < 1 )
     {
       fprintf( stderr, "%s: usage: %s NTHREADS\n", argv[0], argv[0] );
       return 0;
