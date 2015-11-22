@@ -1,0 +1,23 @@
+SRT - Multithreaded
+-------------------
+
+1. I profiled the srt program to identify the performance critical functions first.
+   The code provides multiple oppurtunities to parallelize using threads, but it
+   would be an unnecessary overhead to speed up code that contributes to very little
+   running time. The function 'trace' was observed to be taking the most amount of
+   time, so I decided to parallelize for it first. 
+
+2. I singled out the thread-local dependencies for trace, isolated them, and ran the
+   code with multiple threads. The performance increase was embarassingly obvious, 
+   almost linear as compated to the # of CPU cores. The make-log.txt file quantifies
+   the performance increase for nthreads equal to 1,2,4 & 8.
+
+3. In order to maintain the output format, I created a ~massive global 3D array that 
+   held processed values for each pixel, and displayed them once every thread exited.
+   Even though the thread worker-pool was statically allocated, I used some optimization
+   techniques to load-balance the overall workload for every thread, by ensuring that
+   each completed thread look for more work if it's pending, and no thread repeat work
+   if some other thread is already working on it.
+
+ 
+   
