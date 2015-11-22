@@ -1,0 +1,42 @@
+Lab 9 - Log
+-------------
+
+1. As the spec indicates, I ensured that the sort --version I used was from 
+   /usr/local/cs/bin with version 8.24. This version supports --parallel. 
+
+2. The second step was to create a file with 10 million pseudo-random numbers, 
+   generated using /dev/urandom and command od, and processed using the tr.
+   The od command was used as ::
+
+   od -An -f -N 4000000 < /dev/urandom | tr -s ' ' '\n' > randomFile
+
+   This code generated a file with 10,00,001 lines, each containing a floating
+   point value followed by a newline character. 
+
+3. I then timed the sorting of this data, inputted to sort using a pipe. 
+   The command used was ::
+
+
+4. The performance improvement was listed as follows ::
+
+
+
+4 threads
+----------
+
+
+
+8 threads
+----------
+time -p /usr/local/cs/bin/sort -g --parallel=8 randomFile > /dev/null 
+real 33.18
+user 185.31
+sys 0.38
+
+16 threads
+----------
+time -p /usr/local/cs/bin/sort -g --parallel=16 randomFile > /dev/null 
+real 33.24
+user 298.26
+sys 0.47
+   
