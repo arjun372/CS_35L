@@ -135,14 +135,14 @@ free_scene( scene_t* arg )
  * Constants that have a large effect on performance */
 
 /* how many levels to generate spheres */
-enum { sphereflake_recursion = 3 };
+enum { sphereflake_recursion = 9 };
 
 /* output image size */
-enum { height = 131};
-enum { width = 131};
+enum { height= 1572};
+enum { width = 1572};
 
 /* antialiasing samples, more is higher quality, 0 for no AA */
-enum { halfSamples = 4 };
+enum { halfSamples = 8 };
 /******/
 
 /* color depth to output for ppm */
