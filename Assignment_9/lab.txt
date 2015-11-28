@@ -1,0 +1,6 @@
+1. As per the provided instructions, I compiled a simple 'Hello, World!' program in C using gcc.
+2. The ldd command indicates that the following libraries are used by the executable 'hello.o' :
+       * linux-vdso.so.1 =>  (0x00007ffe944fe000)
+       * libc.so.6 => /lib64/libc.so.6 (0x00000033d2600000)
+       * /lib64/ld-linux-x86-64.so.2 (0x00000033d2200000)
+3.  
